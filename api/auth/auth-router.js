@@ -9,7 +9,7 @@ function buildToken(user) {
   const payload = {
     subject: user.user_id,
     username: user.username,
-    role: user.role_name,
+    role_name: user.role_name,
   };
   const options = {
     expiresIn: "1d",
@@ -42,6 +42,17 @@ router.post("/register", validateRoleName, (req, res, next) => {
 });
 
 router.post("/login", checkUsernameExists, (req, res, next) => {
+  const {username, password} = req.body
+
+  if(req.user && bcrypt.compareSync(password, req.user.password)) {
+    const token = buildToken(req.user)
+    res.status(200).json({
+      message: `${req.user.username} is back!`,
+      token,
+    })
+  } else {
+    next({status: 401, message: "Invalid credentials"})
+  }
   /**
     [POST] /api/auth/login { "username": "sue", "password": "1234" }
 
